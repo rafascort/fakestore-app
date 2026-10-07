@@ -75,3 +75,5 @@ src/
 | Nome completo             | RA      |
 |---------------------------|---------|
 | Rafael Scortegagna Pedra  | 1136090 |
+| Yuri Duarte Theisen       | 1125371 |
+| Pedro Luis Alves Bartz    | 1135935 |
