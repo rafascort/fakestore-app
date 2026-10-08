@@ -6,6 +6,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
 import GroupInfoScreen from './src/screens/GroupInfoScreen';
+import HeaderButton from './src/components/HeaderButton';
 import { colors } from './src/theme';
 
 const Stack = createNativeStackNavigator();
@@ -28,7 +29,21 @@ export default function App() {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Produtos', headerBackVisible: false, gestureEnabled: false }}
+          options={({ navigation }) => ({
+            title: 'Produtos',
+            headerBackVisible: false,
+            gestureEnabled: false,
+            // Header personalizado: Logout à esquerda, título no centro, Informações à direita
+            headerLeft: () => (
+              <HeaderButton
+                label="Sair"
+                onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })}
+              />
+            ),
+            headerRight: () => (
+              <HeaderButton label="Info" onPress={() => navigation.navigate('GroupInfo')} />
+            ),
+          })}
         />
         <Stack.Screen
           name="ProductDetails"

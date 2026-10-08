@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -28,28 +28,6 @@ export default function HomeScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState(null); // filtro começa vazio
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Header personalizado: Logout à esquerda, título no centro, Informações à direita
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })}
-          style={styles.headerButton}
-        >
-          <Text style={styles.headerButtonText}>Sair</Text>
-        </TouchableOpacity>
-      ),
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate('GroupInfo')}
-          style={styles.headerButton}
-        >
-          <Text style={styles.headerButtonText}>Info</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
 
   // Carrega a lista de categorias uma vez
   useEffect(() => {
@@ -155,8 +133,6 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerButton: { paddingHorizontal: 8, paddingVertical: 4 },
-  headerButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   filterBar: {
     backgroundColor: colors.card,
     paddingVertical: 10,
