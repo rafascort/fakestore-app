@@ -58,17 +58,22 @@ Use os campos `username` e `password` de qualquer usuário retornado. Exemplos:
 ```
 App.js                          # Configuração da navegação (Stack Navigator)
 src/
-  services/api.js               # Instância do axios e chamadas à API
+  services/api.js               # Instância do axios e chamadas à API (devolvem só os dados)
+  services/authService.js       # Regra de autenticação (usada pela LoginScreen)
+  hooks/useFetch.js             # Hook com o ciclo carregando/erro/sucesso das requisições
   screens/
     LoginScreen.js              # Tela de login
     HomeScreen.js               # Listagem + filtro por categoria
     ProductDetailsScreen.js     # Detalhes do produto
     GroupInfoScreen.js          # Informações do grupo
   components/ErrorMessage.js    # Componente de erro com "tentar novamente"
+  components/LoadingIndicator.js # Indicador de carregamento reutilizável
   constants/grupo.js            # Nomes e RAs dos integrantes
   utils/format.js               # Formatação de preço e categorias
   theme.js                      # Cores do app
 ```
+
+> Atividade de boas práticas (acoplamento e coesão): veja [ATIVIDADE_BOAS_PRATICAS.md](ATIVIDADE_BOAS_PRATICAS.md).
 
 ## Integrantes do grupo
 
