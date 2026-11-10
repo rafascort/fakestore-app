@@ -9,7 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { getUsers, login, getErrorMessage } from '../services/api';
+import { getErrorMessage } from '../services/api';
+import { authenticate } from '../services/authService';
 import { colors } from '../theme';
 
 export default function LoginScreen({ navigation }) {
@@ -28,24 +29,10 @@ export default function LoginScreen({ navigation }) {
 
     setLoading(true);
     try {
-      // 1) Consulta os usuários existentes na API
-      const { data: users } = await getUsers();
-      const user = users.find((u) => u.username === username.trim());
+      // A regra de autenticação vive no authService; a tela só reage ao resultado
+      await authenticate(username, password);
 
-      if (!user || user.password !== password) {
-        setError('Usuário ou senha inválidos.');
-        return;
-      }
-
-      // 2) Autentica no endpoint de login usando os dados do usuário encontrado
-      const { data } = await login(user.username, user.password);
-
-      if (!data?.token) {
-        setError('Não foi possível autenticar. Tente novamente.');
-        return;
-      }
-
-      // 3) Login OK -> vai para a Home (reset impede voltar ao Login pelo botão "voltar")
+      // Login OK -> vai para a Home (reset impede voltar ao Login pelo botão "voltar")
       setPassword('');
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (err) {

@@ -22,12 +22,21 @@ export function getErrorMessage(error, fallback = 'Ocorreu um erro inesperado.')
   return error?.message || fallback;
 }
 
-export const getUsers = () => api.get('/users');
-export const login = (username, password) => api.post('/auth/login', { username, password });
-export const getProducts = () => api.get('/products');
-export const getCategories = () => api.get('/products/categories');
+// As funções abaixo devolvem apenas o corpo da resposta (response.data),
+// assim as telas e serviços não dependem do formato de resposta do axios.
+export const getUsers = () => api.get('/users').then((res) => res.data);
+export const login = (username, password) =>
+  api.post('/auth/login', { username, password }).then((res) => res.data);
+export const getProducts = () => api.get('/products').then((res) => res.data);
+export const getCategories = () => api.get('/products/categories').then((res) => res.data);
 export const getProductsByCategory = (category) =>
-  api.get(`/products/category/${encodeURIComponent(category)}`);
-export const getProductById = (id) => api.get(`/products/${id}`);
+  api.get(`/products/category/${encodeURIComponent(category)}`).then((res) => res.data);
+
+export async function getProductById(id) {
+  const { data } = await api.get(`/products/${id}`);
+  // A API pode responder 200 com corpo vazio para ids inexistentes
+  if (!data) throw new Error('Produto não encontrado.');
+  return data;
+}
 
 export default api;

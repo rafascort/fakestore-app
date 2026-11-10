@@ -1,46 +1,28 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
-import { getProductById, getErrorMessage } from '../services/api';
+import { useCallback } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { getProductById } from '../services/api';
 import { formatPrice, formatCategory } from '../utils/format';
+import useFetch from '../hooks/useFetch';
 import ErrorMessage from '../components/ErrorMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
 import { colors } from '../theme';
 
 export default function ProductDetailsScreen({ route }) {
   const { id } = route.params;
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const loadProduct = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const { data } = await getProductById(id);
-      // A API pode responder 200 com corpo vazio para ids inexistentes
-      if (!data) throw new Error('Produto não encontrado.');
-      setProduct(data);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Não foi possível carregar o produto.'));
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    loadProduct();
-  }, [loadProduct]);
+  const fetchProduct = useCallback(() => getProductById(id), [id]);
+  const {
+    data: product,
+    loading,
+    error,
+    reload,
+  } = useFetch(fetchProduct, { fallbackMessage: 'Não foi possível carregar o produto.' });
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Carregando produto...</Text>
-      </View>
-    );
+    return <LoadingIndicator message="Carregando produto..." />;
   }
 
   if (error) {
-    return <ErrorMessage message={error} onRetry={loadProduct} />;
+    return <ErrorMessage message={error} onRetry={reload} />;
   }
 
   return (
@@ -60,8 +42,6 @@ export default function ProductDetailsScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 8, color: colors.muted },
   container: { padding: 16 },
   imageBox: {
     backgroundColor: colors.card,

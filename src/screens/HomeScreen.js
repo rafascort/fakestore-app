@@ -1,38 +1,25 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
-import {
-  getProducts,
-  getProductsByCategory,
-  getCategories,
-  getErrorMessage,
-} from '../services/api';
+import { View, Text, FlatList, Image, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { getProducts, getProductsByCategory, getCategories } from '../services/api';
 import { formatPrice, formatCategory } from '../utils/format';
+import useFetch from '../hooks/useFetch';
 import ErrorMessage from '../components/ErrorMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
 import { colors } from '../theme';
 
 // Usadas caso o endpoint de categorias falhe
 const DEFAULT_CATEGORIES = ['electronics', 'jewelery', "men's clothing", "women's clothing"];
+const NO_PRODUCTS = [];
+const PRODUCTS_ERROR = 'Não foi possível carregar os produtos.';
 
 export default function HomeScreen({ navigation }) {
-  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [selectedCategory, setSelectedCategory] = useState(null); // filtro começa vazio
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   // Carrega a lista de categorias uma vez
   useEffect(() => {
     getCategories()
-      .then(({ data }) => {
+      .then((data) => {
         if (Array.isArray(data) && data.length > 0) setCategories(data);
       })
       .catch(() => {
@@ -40,27 +27,17 @@ export default function HomeScreen({ navigation }) {
       });
   }, []);
 
-  // Busca os produtos (todos ou da categoria selecionada)
-  const loadProducts = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = selectedCategory
-        ? await getProductsByCategory(selectedCategory)
-        : await getProducts();
-      setProducts(response.data);
-    } catch (err) {
-      setProducts([]);
-      setError(getErrorMessage(err, 'Não foi possível carregar os produtos.'));
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCategory]);
-
-  // Recarrega sempre que o filtro mudar
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+  // Busca os produtos (todos ou da categoria selecionada) e refaz ao mudar o filtro
+  const fetchProducts = useCallback(
+    () => (selectedCategory ? getProductsByCategory(selectedCategory) : getProducts()),
+    [selectedCategory]
+  );
+  const {
+    data: products,
+    loading,
+    error,
+    reload,
+  } = useFetch(fetchProducts, { fallbackMessage: PRODUCTS_ERROR, initialData: NO_PRODUCTS });
 
   function renderProduct({ item }) {
     return (
@@ -112,12 +89,9 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Carregando produtos...</Text>
-        </View>
+        <LoadingIndicator message="Carregando produtos..." />
       ) : error ? (
-        <ErrorMessage message={error} onRetry={loadProducts} />
+        <ErrorMessage message={error} onRetry={reload} />
       ) : (
         <FlatList
           data={products}
@@ -153,8 +127,6 @@ const styles = StyleSheet.create({
   chipTextActive: { color: '#fff' },
   clearButton: { alignSelf: 'flex-end', marginTop: 8, marginRight: 4 },
   clearText: { color: colors.error, fontWeight: '600' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 8, color: colors.muted },
   list: { padding: 12 },
   card: {
     flexDirection: 'row',
